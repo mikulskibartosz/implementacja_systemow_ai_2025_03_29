@@ -1,0 +1,48 @@
+
+load:
+  output_raw_path: data/raw/data.csv
+  target_column: target
+
+split:
+  test_size: 0.3
+  random_state: 42
+
+  input:
+    raw_path: data/raw/data.csv
+
+  output:
+    train_path: data/processed/train/train.csv
+    test_path: data/processed/test/test.csv
+
+normalize:
+  skip_columns:
+    - target
+
+  input:
+    train_path: data/processed/train/train.csv
+    test_path: data/processed/test/test.csv
+
+  output:
+    train_path: data/processed/train/train_normalized.csv
+    test_path: data/processed/test/test_normalized.csv
+
+train:
+  input:
+    train_path: data/processed/train/train_normalized.csv
+
+  model:
+    name: decision_tree
+    max_depth: 3
+    random_state: 42
+
+  output:
+    output_model_path: models/decision_tree.pkl
+
+evaluate:
+  input:
+    test_path: data/processed/test/test_normalized.csv
+    model_path: models/decision_tree.pkl
+
+  output:
+    report_path: reports/evaluation_report.txt
+    graph_path: reports/evaluation_graph.png
