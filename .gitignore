@@ -1,2 +1,7 @@
 venv
 .venv
+*.whl
+*.tar.gz
+__pycache__
+iris.png
+*.joblib

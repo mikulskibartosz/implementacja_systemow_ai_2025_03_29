@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "sages-kalkulator-03-30"
+version = "0.2.0"
+description = ""
+authors = ["Bartosz Mikulski <mail@mikulskibartosz.name>"]
+readme = "README.md"
+packages = [
+    { include = "kalkulator" }
+]
+include = ["kalkulator/models/*.joblib"]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+scikit-learn = "1.6.1"
+pandas = "2.2.3"
+joblib = "1.3.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+iris-classifier = "kalkulator.__main__:main"

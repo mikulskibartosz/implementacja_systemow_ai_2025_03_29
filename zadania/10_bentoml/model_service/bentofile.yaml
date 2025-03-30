@@ -1,0 +1,16 @@
+service: "service:PenguinsClassifierService"
+description: "Klasyfikator gatunków pingwinów"
+labels:
+  owner: Bartosz Mikulski
+  project: penguins_classifier_service
+include:
+  - "*.py"
+python:
+  packages:
+    - scikit-learn
+    - numpy
+    - pandas
+    - pydantic
+models:
+  - penguins_classifier:latest
+  - penguins_encoder:latest

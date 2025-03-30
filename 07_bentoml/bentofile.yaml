@@ -1,0 +1,15 @@
+service: "service:IrisClassifierService"
+description: "Klasyfikator gatunków irysów"
+labels:
+  owner: Bartosz Mikulski
+  project: iris_classification
+include:
+  - "*.py"
+python:
+  packages:
+    - scikit-learn
+    - numpy
+    - pandas
+    - pydantic
+models:
+  - iris_classifier:latest

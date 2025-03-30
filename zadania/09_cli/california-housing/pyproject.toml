@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "california-housing"
+version = "0.1.0"
+description = ""
+authors = ["Bartosz Mikulski <mail@mikulskibartosz.name>"]
+readme = "README.md"
+packages = [
+    { include = "california_housing", from = "." }
+]
+include = ["california_housing/models/*.joblib"]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+scikit-learn = "1.6.1"
+pandas = "2.2.3"
+joblib = "1.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+california-housing = "california_housing.__main__:main"
