@@ -2689,7 +2689,7 @@ st.pyplot(fig)
 
 ## ZADANIE 11 (30 min)
 
-Przygotuj aplikację Streamlit do obsługi modelu przygtowanego w zadaniu 10.
+Przygotuj aplikację Streamlit do obsługi modelu przygotowanego w zadaniu 10.
 
 Po klasyfikacji pingwina, wyświetl nazwę gatunku oraz zdjęcie.
 
