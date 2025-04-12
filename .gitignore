@@ -5,3 +5,7 @@ venv
 __pycache__
 iris.png
 *.joblib
+**/mlruns/*
+*.pkl
+*.csv
+*.png
