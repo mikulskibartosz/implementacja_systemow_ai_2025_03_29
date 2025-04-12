@@ -179,3 +179,14 @@ build-backend = "poetry.core.masonry.api"
 | Komenda | Opis |
 |---------|------|
 | `streamlit run plik.py` | Uruchamia Streamlit |
+
+## MLFLow
+
+| Komenda | Opis |
+|---------|------|
+| `mlflow ui` | Uruchamia interfejs webowy MLflow |
+| `mlflow run .` | Uruchamia projekt MLflow z bieżącego katalogu |
+| `mlflow run . -P alpha=0.5` | Uruchamia projekt z parametrem |
+| `mlflow models serve -m runs:/<run-id>/model` | Serwuje model z konkretnego uruchomienia |
+| `mlflow models predict -m runs:/<run-id>/model -i dane.csv` | Wykonuje predykcję używając modelu |
+| `mlflow artifacts download -u runs:/<run-id>/model -d ./downloaded_model` | Pobiera artefakty z uruchomienia |
