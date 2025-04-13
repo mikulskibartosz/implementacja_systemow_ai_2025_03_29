@@ -31,6 +31,11 @@ stages:
       hash: md5
       md5: 4176c77998a181a662537c83528c2a94
       size: 1654
+    params:
+      params.yaml:
+        train.max_depth: 2
+        train.random_state: 42
+        train.test_size: 0.2
     outs:
     - path: metrics.json
       hash: md5

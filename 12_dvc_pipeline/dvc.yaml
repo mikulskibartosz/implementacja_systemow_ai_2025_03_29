@@ -8,6 +8,10 @@ stages:
     - data/dataset.csv
   train_model:
     cmd: python train_model.py
+    params:
+    - train.test_size
+    - train.random_state
+    - train.max_depth
     deps:
     - data/dataset.csv
     - params.yaml
