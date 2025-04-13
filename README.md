@@ -190,3 +190,111 @@ build-backend = "poetry.core.masonry.api"
 | `mlflow models serve -m runs:/<run-id>/model` | Serwuje model z konkretnego uruchomienia |
 | `mlflow models predict -m runs:/<run-id>/model -i dane.csv` | Wykonuje predykcję używając modelu |
 | `mlflow artifacts download -u runs:/<run-id>/model -d ./downloaded_model` | Pobiera artefakty z uruchomienia |
+
+## DVC
+
+| Komenda | Opis |
+|---------|------|
+| `dvc init` | Inicjalizuje DVC w projekcie |
+| `dvc add data/dataset.csv` | Dodaje plik do śledzenia przez DVC |
+| `dvc remote add -d myremote s3://bucket/path` | Dodaje zdalne repozytorium |
+| `dvc remote add -d myremote gdrive://folder_id` | Dodaje Google Drive jako zdalne repozytorium |
+| `dvc push` | Wysyła dane do zdalnego repozytorium |
+| `dvc pull` | Pobiera dane ze zdalnego repozytorium |
+| `dvc stage add -n nazwa -d plik.py -o wynik.csv python plik.py` | Tworzy etap potoku, gdzie: -n określa nazwę etapu, -d definiuje zależności (pliki wejściowe), -o określa pliki wyjściowe, a po parametrach podajemy komendę do wykonania (zapisywanie metryk: -M metrics.json) |
+| `dvc repro` | Uruchamia potok DVC |
+| `dvc dag` | Wyświetla graf potoku |
+| `dvc metrics show` | Wyświetla metryki |
+| `dvc metrics diff` | Porównuje metryki między wersjami |
+| `dvc exp run` | Uruchamia eksperyment |
+| `dvc exp show` | Wyświetla listę eksperymentów |
+| `dvc exp diff` | Porównuje eksperymenty |
+| `dvc exp apply exp-1a2b3c` | Zastosowuje eksperyment (zapis parametrów w params.yaml) |
+| `dvc exp run --set-param train.model.n_estimators=50` | Uruchamia eksperyment z określonym parametrem |
+
+# Podsumowanie narzędzi używanych podczas warsztatów
+
+## Zarządzanie zależnościami
+
+W projektach ML zarządzanie zależnościami jest kluczowe ze względu na ścisłe wymagania wersji bibliotek, potrzebę odtwarzalności środowiska oraz współpracę w zespole.
+
+### pip + venv
+Standardowy menedżer pakietów Python z modułem do tworzenia wirtualnych środowisk. Używany do instalacji pakietów Python i izolacji projektów. Definicja zależności odbywa się poprzez plik `requirements.txt`.
+
+### conda
+Kompleksowy menedżer środowisk i pakietów, który zarządza nie tylko bibliotekami Pythona, ale również wersjami samego Pythona i zależnościami binarnymi (C, C++, CUDA). Szczególnie przydatny w projektach ML wymagających specyficznych bibliotek naukowych z komponentami niskopoziomowymi.
+
+### poetry
+Nowoczesne narzędzie do zarządzania zależnościami i publikowania pakietów. Używa pliku `pyproject.toml` do definiowania zależności, umożliwia tworzenie grup zależności (np. dev, test) oraz wspiera publikowanie własnych pakietów.
+
+### uv
+Szybki instalator pakietów Python, kompatybilny z istniejącymi formatami (requirements.txt, pyproject.toml). Znacząco przyspiesza proces instalacji pakietów, co jest istotne w dużych projektach ML z wieloma zależnościami.
+
+## DVC (Data Version Control)
+
+DVC to narzędzie do wersjonowania danych i modeli oraz definiowania potoków ML. Integruje się z Git, ale zamiast przechowywać duże pliki w repozytorium, śledzi metadane i przechowuje faktyczne dane w zewnętrznych magazynach (S3, GCS, lokalny dysk).
+
+W workflow ML, DVC służy do:
+- Śledzenia zmian w danych i modelach
+- Definiowania potoków przetwarzania danych i trenowania modeli
+- Parametryzacji eksperymentów
+- Odtwarzalności wyników
+- Współpracy w zespole poprzez współdzielenie danych i modeli
+
+DVC pozwala na przyrostowe przetwarzanie - ponowne wykonanie tylko tych etapów potoku, których zależności uległy zmianie, co oszczędza czas i zasoby.
+
+## MLflow
+
+MLflow to platforma do zarządzania całym cyklem życia ML. Składa się z kilku komponentów:
+
+- **MLflow Tracking**: Rejestrowanie parametrów, metryk i artefaktów eksperymentów
+- **MLflow Projects**: Pakowanie kodu ML w formie możliwej do odtworzenia
+- **MLflow Models**: Pakowanie modeli w standardowym formacie do wdrożenia
+- **MLflow Registry**: Centralny rejestr modeli z zarządzaniem cyklem życia
+
+W workflow ML, MLflow służy do:
+- Śledzenia i porównywania wyników eksperymentów
+- Zapisywania modeli w standardowym formacie
+- Zarządzania wersjami modeli
+- Wdrażania modeli w różnych środowiskach
+
+MLflow integruje się z popularnymi bibliotekami ML (scikit-learn, TensorFlow, PyTorch) i może współpracować z DVC, tworząc kompletne rozwiązanie do zarządzania eksperymentami.
+
+## BentoML
+
+BentoML to framework do pakowania modeli ML do wdrożenia jako usługi. Umożliwia tworzenie API REST dla modeli ML i pakowanie ich jako kontenery Docker.
+
+W workflow ML, BentoML służy do:
+- Standaryzacji interfejsu modeli
+- Obsługi wielu frameworków ML (scikit-learn, TensorFlow, PyTorch)
+- Tworzenia serwisów API z modelami ML
+- Budowania obrazów Docker gotowych do wdrożenia
+- Skalowania usług ML w środowiskach produkcyjnych
+
+BentoML upraszcza proces przejścia od eksperymentu do produkcji, zapewniając spójny interfejs dla modeli i automatyzując proces wdrażania.
+
+## Optuna
+
+Optuna to framework do automatycznej optymalizacji hiperparametrów. Wykorzystuje zaawansowane algorytmy przeszukiwania przestrzeni parametrów.
+
+W workflow ML, Optuna służy do:
+- Automatycznego strojenia hiperparametrów modeli
+- Efektywnego przeszukiwania przestrzeni parametrów
+- Wizualizacji procesu optymalizacji
+- Równoległego wykonywania eksperymentów
+- Integracji z popularnymi bibliotekami ML (scikit-learn, TensorFlow, PyTorch)
+
+Optuna pozwala na definiowanie złożonych przestrzeni przeszukiwania i optymalizację wielu celów jednocześnie, co jest kluczowe w zaawansowanych projektach ML.
+
+## Streamlit
+
+Streamlit to framework do tworzenia interfejsów webowych dla modeli ML. Umożliwia tworzenie aplikacji ML w formie pojedynczego pliku Python, które można łatwo wdrożyć i udostępnić.
+
+W workflow ML, Streamlit służy do:
+- Tworzenia interfejsów użytkownika dla modeli ML na potrzeby demonstracji i testowania
+- Wizualizacji wyników eksperymentów
+- Udostępniania modeli ML w formie webowej
+- Przygotowania interfejsów użytkownika na potrzeby etykietowania danych
+
+
+
