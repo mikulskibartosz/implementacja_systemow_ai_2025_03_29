@@ -1,0 +1,19 @@
+stages:
+  download_data:
+    cmd: python download_data.py
+    deps:
+    - download_data.py
+    - params.yaml
+    outs:
+    - data/dataset.csv
+  train_model:
+    cmd: python train_model.py
+    deps:
+    - data/dataset.csv
+    - params.yaml
+    - train_model.py
+    outs:
+    - models/model.pkl
+    metrics:
+    - metrics.json:
+        cache: false

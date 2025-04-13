@@ -1,0 +1,42 @@
+schema: '2.0'
+stages:
+  download_data:
+    cmd: python download_data.py
+    deps:
+    - path: download_data.py
+      hash: md5
+      md5: e59dfeca3ee3f9cd7df220726a39cc06
+      size: 974
+    - path: params.yaml
+      hash: md5
+      md5: 972bfef0b315ee6a157f23dd78240ef8
+      size: 101
+    outs:
+    - path: data/dataset.csv
+      hash: md5
+      md5: 72de67d2f0a43b9f53c08f399d9e96ef
+      size: 3878
+  train_model:
+    cmd: python train_model.py
+    deps:
+    - path: data/dataset.csv
+      hash: md5
+      md5: 72de67d2f0a43b9f53c08f399d9e96ef
+      size: 3878
+    - path: params.yaml
+      hash: md5
+      md5: 972bfef0b315ee6a157f23dd78240ef8
+      size: 101
+    - path: train_model.py
+      hash: md5
+      md5: 4176c77998a181a662537c83528c2a94
+      size: 1654
+    outs:
+    - path: metrics.json
+      hash: md5
+      md5: 14f08e5c414d1c1fbe9569d0350c5bde
+      size: 32
+    - path: models/model.pkl
+      hash: md5
+      md5: 79bcd8cd6ff52039ba407f21bf56663f
+      size: 1585
