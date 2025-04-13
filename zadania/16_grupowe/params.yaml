@@ -1,0 +1,25 @@
+optuna:
+  trials: 2
+  n_estimators:
+    min: 50
+    max: 100
+    step: 10
+  learning_rate:
+    min: 0.01
+    max: 0.3
+    log: true
+  max_depth:
+    min: 3
+    max: 10
+  min_samples_split:
+    min: 2
+    max: 10
+  min_samples_leaf:
+    min: 1
+    max: 10
+  subsample:
+    min: 0.5
+    max: 1.0
+bento:
+  model_name: churn_classifier
+  model_tag: gradient_boosting

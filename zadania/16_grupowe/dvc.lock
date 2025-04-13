@@ -1,0 +1,64 @@
+schema: '2.0'
+stages:
+  download_data:
+    cmd: python download.py
+    deps:
+    - path: download.py
+      hash: md5
+      md5: 41e074b9bd606e9b3f70b8f3fdff9794
+      size: 952
+    outs:
+    - path: data/x_test.csv
+      hash: md5
+      md5: 78a2a50f340377061923a8e7d9a6baa9
+      size: 120304
+    - path: data/x_train.csv
+      hash: md5
+      md5: 43a0e5ec2c2d319a05f686287234f664
+      size: 479997
+    - path: data/y_test.csv
+      hash: md5
+      md5: efd91d8e4e6edfa3223ed889eb54cf4f
+      size: 4007
+    - path: data/y_train.csv
+      hash: md5
+      md5: a013845b803397a005d48df565ec585d
+      size: 16007
+  train:
+    cmd: python train.py
+    deps:
+    - path: data/x_test.csv
+      hash: md5
+      md5: 78a2a50f340377061923a8e7d9a6baa9
+      size: 120304
+    - path: data/x_train.csv
+      hash: md5
+      md5: 43a0e5ec2c2d319a05f686287234f664
+      size: 479997
+    - path: data/y_test.csv
+      hash: md5
+      md5: efd91d8e4e6edfa3223ed889eb54cf4f
+      size: 4007
+    - path: data/y_train.csv
+      hash: md5
+      md5: a013845b803397a005d48df565ec585d
+      size: 16007
+    - path: params.yaml
+      hash: md5
+      md5: b193f01c5bb6f4bd4be7386d372cd536
+      size: 362
+    - path: train.py
+      hash: md5
+      md5: 9009706a5c05dcf06f9a6485d972b0c9
+      size: 4645
+  make_bento:
+    cmd: python make_bento.py
+    deps:
+    - path: make_bento.py
+      hash: md5
+      md5: bdfbfe0f87834d87f70df79bb39dff3e
+      size: 1081
+    - path: params.yaml
+      hash: md5
+      md5: b193f01c5bb6f4bd4be7386d372cd536
+      size: 362

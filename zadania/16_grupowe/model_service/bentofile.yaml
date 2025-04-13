@@ -1,0 +1,15 @@
+service: "service:ChurnClassifierService"
+description: "Klasyfikator churnu"
+labels:
+  owner: Bartosz Mikulski
+  project: churn_classifier_service
+include:
+  - "*.py"
+python:
+  packages:
+    - scikit-learn
+    - numpy
+    - pandas
+    - pydantic
+models:
+  - churn_classifier:gradient_boosting

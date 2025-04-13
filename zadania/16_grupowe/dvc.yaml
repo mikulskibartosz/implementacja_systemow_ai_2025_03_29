@@ -1,0 +1,24 @@
+stages:
+  download_data:
+    cmd: python download.py
+    deps:
+    - download.py
+    outs:
+    - data/x_test.csv
+    - data/x_train.csv
+    - data/y_test.csv
+    - data/y_train.csv
+  train:
+    cmd: python train.py
+    deps:
+    - data/x_test.csv
+    - data/x_train.csv
+    - data/y_test.csv
+    - data/y_train.csv
+    - params.yaml
+    - train.py
+  make_bento:
+    cmd: python make_bento.py
+    deps:
+    - make_bento.py
+    - params.yaml
