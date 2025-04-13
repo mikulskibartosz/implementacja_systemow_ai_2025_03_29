@@ -2689,8 +2689,1274 @@ st.pyplot(fig)
 
 ## ZADANIE 11 (30 min)
 
-Przygotuj aplikację Streamlit do obsługi modelu przygotowanego w zadaniu 10.
+Przygotuj aplikację Streamlit do obsługi modelu przygtowanego w zadaniu 10.
 
 Po klasyfikacji pingwina, wyświetl nazwę gatunku oraz zdjęcie.
 
 Użyj `requests` do obsługi API BentoML.
+
+---
+
+# Implementacja systemów AI:
+
+## Optymalizacja, wersjonowanie
+
+---
+
+# Zarządzanie eksperymentami z MLflow
+
+---
+
+## Wprowadzenie: Problem eksperymentów ML
+
+- Jak śledzić parametry modeli?
+- Jak porównywać wyniki różnych wersji?
+- Jak zapewnić reprodukowalność?
+- Jak dzielić się wynikami w zespole?
+- Jak zarządzać wieloma wersjami modeli?
+
+---
+
+## MLflow - platforma do zarządzania cyklem życia ML
+
+- Open-source
+- Niezależna od bibliotek ML
+- Modularna architektura
+- Prosta integracja
+- Wspiera Python, R, Java i inne języki
+
+---
+
+## Główne komponenty MLflow
+
+- **MLflow Tracking** - śledzenie eksperymentów i wyników
+- **MLflow Projects** - pakowanie kodu ML
+- **MLflow Models** - pakowanie modeli ML
+- **MLflow Model Registry** - zarządzanie cyklem życia modeli (wersjonowanie, deployment)
+
+---
+
+## MLflow Tracking
+
+- Śledzenie parametrów modelu
+- Rejestrowanie metryk wydajności
+- Zapisywanie artefaktów (wykresy, pliki)
+- Organizacja eksperymentów
+- Interfejs użytkownika (UI) do analizy
+
+---
+
+## Instalacja i konfiguracja
+
+```bash
+# Instalacja
+pip install mlflow
+
+# Uruchomienie serwera UI
+mlflow ui
+```
+
+Domyślny adres: http://localhost:5000
+
+---
+
+## Podstawowa struktura kodu z MLflow
+
+```python
+import mlflow
+
+# Rozpocznij eksperyment
+mlflow.set_experiment("Nazwa eksperymentu")
+
+with mlflow.start_run():
+    # Zaloguj parametry
+    mlflow.log_param("param1", value1)
+
+    # Zaloguj metryki
+    mlflow.log_metric("accuracy", accuracy)
+
+    # Zapisz model
+    mlflow.sklearn.log_model(model, "model")
+
+    # Zapisz artefakt
+    mlflow.log_artifact("plik.png")
+```
+
+---
+
+## Śledzenie eksperymentów w praktyce
+
+```python
+import mlflow
+import mlflow.sklearn
+from sklearn.ensemble import RandomForestRegressor
+
+with mlflow.start_run(run_name="Eksperyment RF"):
+    # Parametry
+    params = {"n_estimators": 100, "max_depth": 5}
+    mlflow.log_params(params)
+
+    # Trenowanie modelu
+    rf = RandomForestRegressor(**params)
+    rf.fit(X_train, y_train)
+
+    # Logowanie wyników
+    train_score = rf.score(X_train, y_train)
+    test_score = rf.score(X_test, y_test)
+
+    mlflow.log_metric("train_r2", train_score)
+    mlflow.log_metric("test_r2", test_score)
+
+    # Zapisanie modelu
+    mlflow.sklearn.log_model(rf, "model")
+```
+
+---
+
+## Zapisywanie własnych metryk
+
+```python
+from sklearn.metrics import mean_squared_error, r2_score
+
+# Obliczenie różnych metryk
+y_pred = model.predict(X_test)
+mse = mean_squared_error(y_test, y_pred)
+r2 = r2_score(y_test, y_pred)
+
+# Logowanie metryk
+mlflow.log_metric("mse", mse)
+mlflow.log_metric("r2", r2)
+```
+
+---
+
+## Zapisywanie artefaktów
+
+```python
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Tworzenie wykresu
+plt.figure(figsize=(10, 6))
+plt.scatter(y_test, y_pred)
+plt.plot([min(y_test), max(y_test)],
+         [min(y_test), max(y_test)], 'r--')
+plt.xlabel('Wartości rzeczywiste')
+plt.ylabel('Predykcje')
+plt.title('Rzeczywiste vs. Predykcje')
+
+# Zapisanie wykresu
+plt.savefig("predictions_plot.png")
+mlflow.log_artifact("predictions_plot.png")
+```
+
+---
+
+## Ładowanie modelu z MLflow
+
+```python
+# Bezpośrednio po eksperymencie
+model_uri = mlflow.get_artifact_uri("model")
+loaded_model = mlflow.sklearn.load_model(model_uri)
+
+# Lub z konkretnego eksperymentu
+run_id = "abcdef123456789"
+model_uri = f"runs:/{run_id}/model"
+loaded_model = mlflow.sklearn.load_model(model_uri)
+
+# Z Model Registry
+model_name = "RandomForestRegressor"
+version = 2
+model = mlflow.sklearn.load_model(
+    f"models:/{model_name}/{version}"
+)
+```
+
+---
+
+## ZADANIE 12 (30 min)
+
+Wykorzystaj zbiór danych Palmer Penguins.
+
+Zaimplementuj prosty potok uczenia maszynowego:
+
+1. Podział danych na zbiory treningowy i testowy
+2. Trenowanie modelu Random Forest z różnymi hiperparametrami
+3. Ewaluacja modelu na zbiorze testowym
+
+Śledź eksperymenty używając MLflow:
+
+1. Utwórz eksperyment o nazwie "Palmer Penguins-Klasyfikacja"
+2. Wykonaj minimum 5 uruchomień z różnymi hiperparametrami
+3. Zapisz parametry, metryki i model (oraz encoder!) w każdym uruchomieniu
+4. Zapisz sygnaturę modelu i przykładowe dane wejściowe
+
+---
+
+## MLflow Projects
+
+- Format do pakowania kodu ML
+- Definicja środowiska (conda, virtualenv)
+- Parametryzowane punkty wejścia
+- Reprodukowalność w różnych środowiskach
+
+---
+
+## Struktura projektu MLflow
+
+```
+projekt-ml/
+├── MLproject         # Definicja projektu
+├── conda.yaml        # Środowisko conda
+├── train.py          # Skrypt treningowy
+└── evaluate.py       # Skrypt ewaluacyjny
+```
+
+---
+
+## Plik MLproject
+
+```yaml
+name: przykładowy-projekt
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      alpha: {type: float, default: 0.5}
+      l1_ratio: {type: float, default: 0.1}
+    command: "python train.py --alpha {alpha} --l1_ratio {l1_ratio}"
+
+  evaluate:
+    parameters:
+      run_id: {type: string}
+    command: "python evaluate.py --run-id {run_id}"
+```
+
+---
+
+## Uruchamianie projektu MLflow
+
+```bash
+# Lokalne uruchomienie
+mlflow run ./projekt-ml -P alpha=0.2
+
+# Uruchomienie z GitHub
+mlflow run https://github.com/user/projekt-ml -P alpha=0.2
+
+# Uruchomienie w trybie bez conda
+mlflow run ./projekt-ml --env-manager local -P alpha=0.2
+```
+
+---
+
+## ZADANIE 13 (30 min)
+
+Użyj MLFlow Project do implementacji skryptów trenujących i ewaluujących model z zadania 12.
+
+---
+
+## MLflow Models
+
+- Standardowy format modeli ML
+- Niezależność od bibliotek
+- Łatwy deployment
+- Sygnatura modelu (wejście/wyjście)
+- Wsparcie dla różnych "flavors" (sklearn, pytorch, tensorflow...)
+
+---
+
+## Zapisywanie modelu z sygnaturą
+
+```python
+from mlflow.models.signature import infer_signature
+
+# Generowanie sygnatury
+signature = infer_signature(X_train, model.predict(X_train))
+
+# Zapisanie modelu z sygnaturą i przykładem
+mlflow.sklearn.log_model(
+    model,
+    "model",
+    signature=signature,
+    input_example=X_train[:3]
+)
+```
+
+---
+
+## Serwowanie modelu jako API
+
+```bash
+# Uruchomienie lokalnego serwera
+mlflow models serve -m runs:/RUN_ID/model --port 1234
+mlflow models serve -m runs:/4dafc47af883465688d7c0cc0bccb3c2/model --port 1234
+
+
+# Testowanie API
+curl http://127.0.0.1:1234/invocations -H 'Content-Type: application/json' -d '{"dataframe_split": {"columns": ["sepal length (cm)","sepal width (cm)","petal length (cm)","petal width (cm)"], "data": [[5.1,3.5,1.4,0.2]]}}'
+```
+
+---
+
+## MLflow Model Registry
+
+- Centralny rejestr modeli
+- Wersjonowanie modeli
+- Zarządzanie cyklem życia (staging, production, archived)
+- Przejrzystość i kontrola dostępu
+- Komentarze i opisy wersji
+
+---
+
+## Rejestrowanie modelu
+
+```python
+# Zapisanie modelu do rejestru
+with mlflow.start_run():
+    # Trenowanie modelu...
+
+    # Rejestracja modelu
+    mlflow.sklearn.log_model(
+        model,
+        "model",
+        registered_model_name="RandomForestRegressor"
+    )
+```
+
+```python
+# Lub rejestracja istniejącego modelu
+from mlflow.tracking import MlflowClient
+
+client = MlflowClient()
+client.create_registered_model("RandomForestRegressor")
+```
+
+---
+
+
+## UI MLflow - główne funkcje
+
+- Przeglądanie eksperymentów i ich parametrów
+- Porównywanie wielu eksperymentów
+- Wizualizacja metryk
+- Przeglądanie artefaktów
+- Zarządzanie modelami w Model Registry
+
+---
+
+## Porównywanie eksperymentów
+
+1. Wybierz eksperymenty do porównania
+2. Użyj przycisku "Compare"
+3. Wybierz metrykę do wizualizacji
+4. Analizuj wpływ parametrów na wyniki
+
+---
+
+## Organizacja eksperymentów
+
+- Tworzenie nowych eksperymentów
+  ```python
+  mlflow.set_experiment("Nowy eksperyment")
+  ```
+
+- Używanie tagów
+  ```python
+  with mlflow.start_run():
+      mlflow.set_tag("wersja", "v1")
+      mlflow.set_tag("autor", "Jan Kowalski")
+  ```
+
+- Zagnieżdżone nazwy eksperymentów
+  ```python
+  mlflow.set_experiment("projekt/podzadanie/model")
+  ```
+
+---
+
+## Tagowanie eksperymentów
+
+```python
+# Dodawanie tagów
+with mlflow.start_run():
+    mlflow.set_tag("priorytet", "wysoki")
+    mlflow.set_tag("środowisko", "produkcja")
+    mlflow.set_tag("dataset", "dane_2023")
+
+# Wyszukiwanie po tagach w UI lub API
+runs = mlflow.search_runs(
+    filter_string="tag.priorytet = 'wysoki'"
+)
+```
+
+---
+
+## Tworzenie raportów z eksperymentów
+
+- Eksport tabel z wynikami (CSV)
+- Eksport wykresów (PNG)
+- Udostępnianie linkówp do eksperymentów
+- Zapisywanie widoków w UI MLflow
+- Eksport definicji eksperymentów
+
+---
+
+## Praktyczne zastosowania MLflow
+
+- Śledzenie wszystkich eksperymentów
+- Automatyzacja eksperymentów (CI/CD)
+- Współpraca w zespole
+- Wdrażanie modeli
+- Audyt i dokumentacja modeli
+- Reprodukowalność badań
+
+---
+
+## Najlepsze praktyki MLflow
+
+- Zawsze używaj `mlflow.set_experiment()` (z wyjątkiem projektów MLflow)
+- Loguj wszystkie parametry i metryki
+- Dodawaj tagi dla lepszej organizacji
+- Używaj sygnatur dla modeli
+- Używaj hierarchii eksperymentów
+
+---
+
+# Optymalizacja hiperparametrów
+
+---
+
+## Dlaczego optymalizacja hiperparametrów jest ważna?
+
+- Hiperparametry mają kluczowy wpływ na wydajność modelu
+- Nie są bezpośrednio optymalizowane podczas treningu
+- Wymagają zewnętrznego procesu optymalizacji
+- Ich liczba rośnie z złożonością modelu
+- Prawidłowy dobór może znacząco poprawić jakość modelu
+- Zły dobór może prowadzić do przeuczenia lub niedouczenia
+
+---
+
+## Wyzwania w optymalizacji hiperparametrów
+
+- Duża liczba hiperparametrów do optymalizacji
+- Nieznane interakcje między parametrami
+- Koszt obliczeniowy ewaluacji modeli
+- Nieciągłe lub niemonotoniczne przestrzenie hiperparametrów
+- Różne skale i typy parametrów (liczbowe, kategoryczne)
+- Kompromis między dokładnością a czasem obliczeń
+
+---
+
+## Podstawowe podejścia do optymalizacji
+
+1. **Ręczny dobór** - bazujący na doświadczeniu i heurystykach
+2. **Grid Search** - systematyczne przeszukiwanie siatki wartości
+3. **Random Search** - losowe próbkowanie przestrzeni
+4. **Bayesowska optymalizacja** - modelowanie funkcji celu i inteligentne próbkowanie
+5. **Metody ewolucyjne** - inspirowane biologiczną ewolucją
+6. **Gradient-based** - optymalizacja gradientowa hiperparametrów
+
+---
+
+## Grid Search
+
+**Idea**: Systematyczne przeszukiwanie wszystkich kombinacji wartości z predefiniowanej siatki
+
+**Zalety**:
+- Prosta implementacja
+- Deterministyczny (zawsze te same wyniki)
+- Dokładne przeszukiwanie zadanej przestrzeni
+
+**Wady**:
+- Złożoność wykładnicza O(m^n)
+- Nieefektywny dla dużej liczby parametrów
+- Wymaga dobrego zrozumienia zakresów parametrów
+
+---
+
+## Grid Search - implementacja w scikit-learn
+
+```python
+from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import RandomForestClassifier
+
+# Definicja przestrzeni hiperparametrów
+param_grid = {
+    'n_estimators': [50, 100, 200],
+    'max_depth': [5, 10, 15, None],
+    'min_samples_split': [2, 5, 10]
+}
+
+# Konfiguracja Grid Search
+grid_search = GridSearchCV(
+    estimator=RandomForestClassifier(),
+    param_grid=param_grid,
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1
+)
+
+grid_search.fit(X_train, y_train)
+
+best_params = grid_search.best_params_
+```
+
+---
+
+## Random Search
+
+**Idea**: Losowe próbkowanie wartości z zadanych rozkładów dla każdego parametru
+
+**Zalety**:
+- Bardziej efektywny niż Grid Search dla wielu parametrów
+- Lepszy dla niejednorodnych parametrów
+- Można przeznaczyć budżet obliczeniowy elastycznie
+
+**Wady**:
+- Mniejsza powtarzalność wyników
+- Może nie trafić w optymalne obszary
+
+---
+
+## Random Search - implementacja w scikit-learn
+
+```python
+from sklearn.model_selection import RandomizedSearchCV
+from scipy.stats import randint, uniform
+
+# Definicja rozkładów dla hiperparametrów
+param_distributions = {
+    'n_estimators': randint(50, 300),
+    'max_depth': randint(3, 20),
+    'min_samples_split': randint(2, 15),
+    'max_features': uniform(0.1, 0.9)
+}
+
+# Konfiguracja Random Search
+random_search = RandomizedSearchCV(
+    estimator=RandomForestClassifier(),
+    param_distributions=param_distributions,
+    n_iter=100,  # liczba kombinacji do wypróbowania
+    cv=5,
+    scoring='accuracy',
+    n_jobs=-1
+)
+
+random_search.fit(X_train, y_train)
+```
+
+---
+
+## Integracja Grid/Random Search z MLflow
+
+```python
+import mlflow
+
+with mlflow.start_run(run_name="RandomSearch-RF"):
+    # Logowanie informacji o przeszukiwaniu
+    mlflow.log_param("search_method", "RandomizedSearchCV")
+    mlflow.log_param("n_iterations", 100)
+
+    random_search.fit(X_train, y_train)
+
+    # Logowanie najlepszych parametrów
+    best_params = random_search.best_params_
+    for param, value in best_params.items():
+        mlflow.log_param(f"best_{param}", value)
+
+    # Logowanie metryk
+    mlflow.log_metric("best_score", random_search.best_score_)
+
+    # Zapisanie najlepszego modelu
+    mlflow.sklearn.log_model(random_search.best_estimator_,
+                            "best_model")
+---
+
+## Bayesowska optymalizacja hiperparametrów
+
+**Idea**: Modelowanie funkcji celu i inteligentne próbkowanie w obiecujących obszarach
+
+**Zalety**:
+- Wykorzystuje wiedzę z poprzednich ewaluacji
+- Wymaga znacznie mniej ewaluacji modelu
+- Lepszy balans między eksploracją a eksploatacją
+- Lepsze wyniki przy ograniczonym budżecie
+
+**Wady**:
+- Większa złożoność implementacji
+- Wymaga dodatkowych obliczeń dla modelowania
+
+---
+
+## Jak działa Bayesowska optymalizacja?
+
+1. **Model zastępczy (surrogate model)** - modeluje funkcję celu
+   - Najczęściej używane: procesy Gaussowskie (Gaussian Processes)
+   - Alternatywy: Random Forests, TPE (Tree-structured Parzen Estimator)
+
+2. **Funkcja akwizycji (acquisition function)** - wybiera kolejne punkty do ewaluacji
+
+3. **Iteracyjny proces**: modeluj → wybierz punkt → oceń → aktualizuj model → powtórz
+
+---
+
+## Biblioteka Optuna
+
+- Nowoczesna biblioteka Python do optymalizacji hiperparametrów
+- Efektywna implementacja Bayesowskiej optymalizacji
+- Wsparcie dla pruning (wczesnego zatrzymywania)
+- Zaawansowane wizualizacje
+- Wbudowana integracja z popularnymi frameworkami ML
+- Możliwość zrównoleglenia poszukiwań
+- Zapisywanie i odtwarzanie stanu optymalizacji
+
+---
+
+## Optuna - podstawowe pojęcia
+
+- **Trial** - pojedyncza ewaluacja zestawu hiperparametrów
+- **Study** - zbiór trials do optymalizacji
+- **Sampler** - strategia wyboru hiperparametrów (np. TPESampler)
+- **Pruner** - strategia wczesnego zatrzymywania prób
+- **Objective function** - funkcja do optymalizacji
+
+---
+
+## Definiowanie przestrzeni parametrów w Optuna
+
+```python
+# Parametry liczbowe
+x = trial.suggest_float('x', -10, 10)           # Jednostajnie z [-10, 10]
+y = trial.suggest_float('y', 1e-5, 1e-2, log=True)  # Logarytmicznie
+
+# Parametry całkowitoliczbowe
+n = trial.suggest_int('n', 1, 100)              # Jednostajnie z [1, 100]
+m = trial.suggest_int('m', 2, 32, log=True)     # Logarytmicznie
+
+# Parametry kategoryczne
+method = trial.suggest_categorical('method', ['sgd', 'adam', 'rmsprop'])
+
+# Warunkowe parametry
+if method == 'sgd':
+    momentum = trial.suggest_float('momentum', 0, 1.0)
+```
+
+---
+
+## Integracja Optuna z MLflow
+
+```python
+from optuna.integration.mlflow import MLflowCallback
+
+# Konfiguracja MLflow callback
+mlflow_callback = MLflowCallback(
+    tracking_uri=mlflow.get_tracking_uri(),
+    metric_name="accuracy"
+)
+
+# Utworzenie badania (study)
+study = optuna.create_study(direction='maximize')
+
+# Rozpoczęcie optymalizacji z callbackiem
+study.optimize(objective, n_trials=100, callbacks=[mlflow_callback])
+```
+
+---
+
+## Pruning w Optuna
+
+```python
+# Definiowanie funkcji celu z pruningiem
+def objective(trial):
+    # Parametry modelu
+    params = {
+        'n_estimators': trial.suggest_int('n_estimators', 50, 1000),
+        'learning_rate': trial.suggest_float('learning_rate', 0.01, 0.3)
+    }
+
+    model = GradientBoostingClassifier(**params)
+
+    # Walidacja krzyżowa z pruningiem
+    for step, (train_idx, val_idx) in enumerate(cv.split(X, y)):
+        X_train_cv, X_val_cv = X[train_idx], X[val_idx]
+        y_train_cv, y_val_cv = y[train_idx], y[val_idx]
+
+        model.fit(X_train_cv, y_train_cv)
+        val_score = model.score(X_val_cv, y_val_cv)
+
+        # Raportowanie wyniku do Optuna
+        trial.report(val_score, step)
+
+        # Sprawdzenie czy przerwać próbę
+        if trial.should_prune():
+            raise optuna.exceptions.TrialPruned()
+
+    return val_score
+
+# Utworzenie badania z prunerem
+study = optuna.create_study(
+    direction='maximize',
+    pruner=optuna.pruners.MedianPruner()
+)
+```
+
+---
+
+## Wizualizacja i analiza przestrzeni hiperparametrów
+
+**Cel**: Zrozumienie wpływu hiperparametrów na wydajność modelu
+
+**Korzyści**:
+- Identyfikacja kluczowych hiperparametrów
+- Odkrywanie interakcji między parametrami
+- Lepsze zrozumienie zachowania modelu
+- Zawężenie przestrzeni przeszukiwania w przyszłych eksperymentach
+
+---
+
+## Wizualizacje w Optuna
+
+```python
+import optuna.visualization as vis
+
+# Historia optymalizacji
+vis.plot_optimization_history(study)
+
+# Ważność parametrów
+vis.plot_param_importances(study)
+
+# Wykresy zależności celu od parametrów
+vis.plot_contour(study, params=['learning_rate', 'n_estimators'])
+
+# Wykresy równoległe
+vis.plot_parallel_coordinate(study)
+
+# Wykresy cząstkowych zależności
+vis.plot_slice(study)
+
+# Wykres rozrzutu dla optymalizacji wielocelowej
+vis.plot_pareto_front(study)  # Dla optymalizacji wielocelowej
+```
+
+---
+
+## Historia optymalizacji
+
+- Pokazuje progres optymalizacji w czasie
+- Pozwala ocenić szybkość zbieżności
+- Wskazuje, czy potrzeba więcej iteracji
+
+---
+
+## Wykresy konturowe
+
+- Pokazuje wartość funkcji celu dla par parametrów
+- Pozwala zidentyfikować interakcje między parametrami
+- Wskazuje optymalne obszary przestrzeni parametrów
+
+---
+
+## Wykresy równoległe współrzędnych
+
+- Wizualizuje wiele prób w przestrzeni wielowymiarowej
+- Pozwala zidentyfikować wzorce w dobrych rozwiązaniach
+- Użyteczne dla porównania wielu parametrów jednocześnie
+
+---
+
+## Analiza wyników optymalizacji
+
+```python
+import pandas as pd
+
+# Pobranie danych z badania Optuna
+trials_df = study.trials_dataframe()
+
+# Podstawowe statystyki
+print(trials_df.describe())
+
+# Korelacja między parametrami a wynikiem
+correlation = trials_df.corr()['value']
+print(correlation)
+
+# Najlepsze próby
+best_trials = trials_df.nsmallest(10, 'value')
+print(best_trials)
+
+# Analiza trendów w najlepszych próbach
+plt.figure(figsize=(10, 6))
+sns.pairplot(best_trials, vars=['params_learning_rate',
+                               'params_n_estimators',
+                               'value'])
+```
+
+---
+
+## Najlepsze praktyki w optymalizacji hiperparametrów
+
+1. **Zacznij od szerokiego zakresu** parametrów, potem zawężaj
+2. **Używaj skali logarytmicznej** dla parametrów o dużym zakresie
+3. **Ustal priorytety** - najpierw optymalizuj najważniejsze parametry
+4. **Używaj cross-validation** dla bardziej wiarygodnych wyników
+5. **Monitoruj czas treningu** - dodaj go jako drugą metrykę
+6. **Analizuj wyniki wizualnie** - wykresy mówią więcej niż liczby
+7. **Zapisuj wszystkie eksperymenty** w MLflow
+8. **Stosuj early stopping** dla oszczędności czasu
+9. **Zrównoleglaj próby** gdy to możliwe
+
+---
+
+## Zadanie 14 (45 min)
+
+Użyj Optuna do optymalizacji hiperparametrów modelu z zadania 12.
+
+Pamiętaj o zapisywaniu wszystkich eksperymentów w MLflow.
+Zapisz również najlepszy model w Model Registry.
+
+---
+
+# Wersjonowanie danych i modeli z DVC
+
+---
+
+## Problem: Wersjonowanie w ML
+
+- Kod to tylko część projektu ML
+- Dane są często **duże** (GB/TB)
+- Dane i modele **zmieniają się** w czasie
+- Git nie radzi sobie z dużymi plikami
+- Trudno śledzić, która wersja kodu współpracuje z którą wersją danych
+
+---
+
+## Typowe sytuacje
+
+- "Ten model osiągnął 95% dokładności, ale nie pamiętam, na jakiej wersji danych był trenowany"
+- "Czy możesz mi wysłać dane, które używałeś w tym eksperymencie?"
+- "Mój model daje inne wyniki niż wczoraj, ale nie zmieniałem kodu..."
+- "Nie mogę zreprodukować twoich wyników"
+- "Próbuję wypchać 10GB danych do Gita..."
+
+---
+
+## Data Version Control (DVC)
+
+- Open-source system do wersjonowania **danych, modeli i eksperymentów**
+- Zbudowany **na bazie Git**
+- Śledzi **zależności** między kodem, danymi i wynikami
+- Zapewnia **reprodukowalność** eksperymentów
+- Umożliwia tworzenie **powtarzalnych potoków**
+- Działa z **dowolnymi** magazynami danych (S3, GCS, Azure, SSH, itd.)
+
+---
+
+## Jak działa DVC?
+
+- Pliki .dvc zawierają metadane (md5 hashes)
+- Faktyczne dane są przechowywane w cache i zdalnym magazynie
+- Git śledzi pliki .dvc
+
+---
+
+## Typowy workflow DVC
+
+1. Dodanie danych do śledzenia przez DVC
+2. Committing plików .dvc do Git
+3. Wypchanie danych do zdalnego magazynu
+4. Tworzenie potoków przetwarzania danych
+5. Śledzenie zmian w danych i wynikach
+6. Odtwarzanie konkretnych wersji danych i modeli
+
+---
+
+## Instalacja DVC
+
+```bash
+# Instalacja podstawowa
+pip install dvc
+
+# Z obsługą konkretnych magazynów
+pip install dvc[s3]     # dla AWS S3
+pip install dvc[gs]     # dla Google Cloud Storage
+pip install dvc[azure]  # dla Azure Blob Storage
+pip install dvc[gdrive] # dla Google Drive
+
+# Inicjalizacja w projekcie git
+git init
+dvc init
+git add .dvc .dvcignore
+git commit -m "Initialize DVC"
+```
+
+---
+
+## Śledzenie danych
+
+```bash
+# Dodanie pojedynczego pliku
+dvc add data/dataset.csv
+
+# Dodanie katalogu
+dvc add data/images/
+
+# Co się dzieje?
+# 1. Utworzenie dataset.csv.dvc (metadane)
+# 2. Dodanie dataset.csv do .gitignore
+# 3. Kopiowanie danych do .dvc/cache
+# 4. Utworzenie linku do cache
+
+# Dodanie pliku .dvc do Git
+git add data/dataset.csv.dvc data/.gitignore
+git commit -m "Add dataset"
+```
+
+---
+
+## Zdalne repozytoria
+
+```bash
+# Dodanie zdalnego repozytorium (np. S3)
+dvc remote add -d myremote s3://mybucket/dvcstore
+
+# Zapisanie konfiguracji w Git
+git add .dvc/config
+git commit -m "Configure remote storage"
+
+# Wypchanie danych do zdalnego magazynu
+dvc push
+
+# Pobranie danych
+dvc pull
+```
+
+---
+
+## Obsługiwane zdalne magazyny
+
+- **Lokalne** systemy plików
+- **SSH** serwery
+- **Amazon S3**
+- **Google Cloud Storage**
+- **Azure Blob Storage**
+- **Google Drive**
+- **Aliyun OSS**
+- **HDFS**
+- i wiele innych...
+
+---
+
+## Śledzenie zmian
+
+```bash
+# Sprawdzenie statusu
+dvc status
+
+# Wyświetlenie zmian w danych
+dvc diff
+
+# Powrót do wcześniejszej wersji
+git checkout <stara-wersja>
+dvc checkout
+```
+
+---
+
+## Potoki DVC (Pipelines)
+
+- **Reprodukowalne** przepływy pracy
+- **Automatyczne** wykrywanie zmian
+- **Inkrementalne** przetwarzanie (wykonywanie tylko niezbędnych etapów)
+- **Parametryzowane** eksperymenty
+- **Śledzenie** metryk i wykresów
+
+---
+
+## Definiowanie etapów potoku
+
+```bash
+# Przetwarzanie danych
+dvc stage add -n prepare \
+    -d src/prepare.py -d data/raw/dataset.csv \
+    -o data/processed/features.csv \
+    python src/prepare.py data/raw/dataset.csv data/processed/features.csv
+
+# Trening modelu
+dvc stage add -n train \
+    -d src/train.py -d data/processed/features.csv \
+    -o models/model.pkl -M metrics/metrics.json \
+    python src/train.py data/processed/features.csv models/model.pkl metrics/metrics.json
+```
+
+---
+
+## Plik dvc.yaml
+
+```yaml
+stages:
+  prepare:
+    cmd: python src/prepare.py data/raw/dataset.csv data/processed/features.csv
+    deps:
+      - src/prepare.py
+      - data/raw/dataset.csv
+    outs:
+      - data/processed/features.csv
+
+  train:
+    cmd: python src/train.py data/processed/features.csv models/model.pkl metrics/metrics.json
+    deps:
+      - src/train.py
+      - data/processed/features.csv
+    outs:
+      - models/model.pkl
+    metrics:
+      - metrics/metrics.json:
+          cache: false
+```
+
+---
+
+## Uruchamianie potoków
+
+```bash
+# Uruchomienie całego potoku
+dvc repro
+
+# Uruchomienie konkretnego etapu
+dvc repro train
+
+# Wyświetlenie zależności
+dvc dag
+```
+
+---
+
+## Parametryzacja potoków
+
+```yaml
+# params.yaml
+prepare:
+  split: 0.2
+  seed: 42
+
+train:
+  model: RandomForest
+  n_estimators: 100
+  max_depth: 5
+```
+
+```yaml
+# dvc.yaml
+stages:
+  train:
+    params:
+      - train.model
+      - train.n_estimators
+    cmd: python train.py
+    deps:
+      - ...
+```
+
+```python
+# W kodzie Python
+with open("params.yaml") as f:
+    params = yaml.safe_load(f)
+model_type = params["train"]["model"]
+```
+
+---
+
+## Metryki i wykresy
+
+```bash
+# Wyświetlenie metryk
+dvc metrics show
+
+# Porównanie metryk między wersjami
+dvc metrics diff HEAD HEAD~1
+
+# Generowanie wykresów
+dvc plots show plots/confusion_matrix.csv --template confusion
+
+# Porównanie wykresów między wersjami
+dvc plots diff HEAD HEAD~1 plots/accuracy.csv --template scatter
+```
+
+---
+
+## Eksperymenty DVC
+
+```bash
+# Uruchomienie eksperymentu z modyfikacją parametrów
+dvc exp run --set-param train.n_estimators=200
+
+# Wyświetlenie eksperymentów
+dvc exp show
+
+# Porównanie eksperymentów
+dvc exp diff exp-1a2b3c exp-4d5e6f
+
+# Zastosowanie eksperymentu (zapis parametrów w params.yaml)
+dvc exp apply exp-1a2b3c
+```
+
+---
+
+## Zalety eksperymentów DVC
+
+- Brak potrzeby commitowania każdego eksperymentu
+- Szybkie testowanie różnych parametrów
+- Łatwe porównywanie wyników
+- Możliwość powrotu do poprzednich eksperymentów
+- Integracja z potokami DVC
+
+---
+
+## Integracja z MLflow
+
+```python
+import mlflow
+import yaml
+
+# Ustawienie eksperymentu
+mlflow.set_experiment("DVC-Experiment")
+
+# Odczyt parametrów z DVC
+with open("params.yaml") as f:
+    params = yaml.safe_load(f)
+
+# Trening modelu z śledzeniem MLflow
+with mlflow.start_run():
+    # Logowanie parametrów z DVC
+    for key, value in params["train"].items():
+        mlflow.log_param(key, value)
+
+    # Trenowanie modelu
+    # ...
+
+    # Logowanie metryk w MLflow
+    mlflow.log_metric("accuracy", accuracy)
+
+    # Zapisanie modelu w MLflow
+    mlflow.sklearn.log_model(model, "model")
+
+    # Zapisanie również dla DVC
+    with open("metrics/metrics.json", "w") as f:
+        json.dump({"accuracy": accuracy}, f)
+```
+
+---
+
+## Współpraca przy użyciu DVC
+
+- **Współdzielenie danych** między członkami zespołu
+- **Zdalny cache** dla szybkiego dostępu
+- **Importowanie danych** z innych projektów
+- **Śledzenie eksperymentów** zespołu
+- **Udostępnianie modeli** i wyników
+
+---
+
+## Importowanie danych z innych projektów
+
+```bash
+# Importowanie danych z innego projektu
+dvc import https://github.com/username/project dataset.csv
+
+# Aktualizacja zaimportowanych danych
+dvc update dataset.csv.dvc
+```
+
+---
+
+## Typowa struktura projektu z DVC
+
+```
+projekt-ml/
+├── .git/                  # Repozytorium Git
+├── .dvc/                  # Konfiguracja DVC
+├── data/
+│   ├── raw/               # Surowe dane
+│   └── processed/         # Przetworzone dane
+├── src/                   # Kod źródłowy
+├── models/                # Modele
+├── metrics/               # Metryki
+├── dvc.yaml               # Definicja potoku
+├── params.yaml            # Parametry
+└── requirements.txt       # Zależności
+```
+
+---
+
+## Zalety DVC
+
+- **Lekki** - metadane zamiast faktycznych danych w Git
+- **Elastyczny** - działa z dowolnymi magazynami danych
+- **Integracja z Git** - wykorzystanie istniejących narzędzi
+- **Reprodukowalność** - powiązanie kodu, danych i wyników
+- **Inkrementalne przetwarzanie** - ponowne wykonanie tylko zmienionych etapów
+- **Eksperymentowanie** - łatwe testowanie różnych parametrów
+- **Współpraca** - efektywne udostępnianie danych i modeli
+
+---
+
+## DVC vs. inne narzędzia
+
+| Narzędzie   | Wersjonowanie danych | Potoki | Eksperymenty | Integracja z Git |
+|-------------|----------------------|--------|--------------|------------------|
+| **DVC**     | ✅                  | ✅     | ✅          | ✅               |
+| Git LFS     | ✅                  | ❌     | ❌          | ✅               |
+| MLflow      | ❌                  | ❌     | ✅          | ❌               |
+| Pachyderm   | ✅                  | ✅     | ❌          | ❌               |
+| Kubeflow    | ❌                  | ✅     | ❌          | ❌               |
+
+---
+
+## Najlepsze praktyki
+
+- Organizuj dane w **logiczne grupy**
+- Regularnie **wypychaj dane** do zdalnego magazynu
+- Używaj **parametryzacji** potoków
+- Organizuj kod tak, aby odpowiadał **etapom potoku**
+- Używaj znaczących **nazw dla etapów**
+- Dokumentuj zmiany w danych w **komunikatach commitów**
+- Integruj DVC z **systemem CI/CD**
+- Łącz DVC z **narzędziami do eksperymentów** (MLflow)
+
+---
+
+## ZADANIE 15 (45 minut)
+
+Przygotuj potok DVC do trenowania modelu klasyfikującego pingwiny.
+
+Potok powinien zawierać:
+1. Pobieranie danych.
+2. Przygotowanie danych. Podział na zbiór treningowy i testowy oraz one-hot encoding.
+3. Trenowanie modelu.
+
+Zapisz model na dysku oraz w MLFLow.
+
+---
+
+## ZADANIE 16
+
+Zbuduj obraz Dockera zawierający model klasyfikujący churn z użyciem zbioru danych [https://raw.githubusercontent.com/sharmaroshan/Churn-Modelling-Dataset/refs/heads/master/Churn_Modelling.csv](https://raw.githubusercontent.com/sharmaroshan/Churn-Modelling-Dataset/refs/heads/master/Churn_Modelling.csv).
+
+Użyj następujących narzędzi:
+
+1. DVC - pobieranie danych, przetwarzanie danych i trenowanie modelu, pobieranie modelu z repozytorium MLFLow i zapisywanie w formacie BentoML.
+2. MLflow - śledzenie eksperymentów i zarządzanie modelami.
+3. Optuna - optymalizacja hiperparametrów wewnątrz skryptu trenującego model.
+4. BentoML - budowanie usługi REST API jako obraz Dockera.
+
+---
+
+Podpowiedź:
+
+Pobieranie modelu z MLFLow w formacie Scikit-Learn (gotowym do zapisu z użyciem `bentoml.sklearn.save_model`)
+
+```python
+sklearn_model = mlflow.sklearn.load_model(f"models:/{model_name}/latest")
+```
