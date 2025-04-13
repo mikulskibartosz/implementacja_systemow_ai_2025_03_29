@@ -4,4 +4,4 @@ download:
 train:
   test_size: 0.2
   random_state: 42
-  max_depth: 1
+  max_depth: 2
