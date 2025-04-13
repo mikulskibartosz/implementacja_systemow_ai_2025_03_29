@@ -1,0 +1,4 @@
+[core]
+    remote = remote
+['remote "remote"']
+    url = /Users/myszon/Projects/sages/implementacja_systemow_ai_2025_03_29/dvc_remote
